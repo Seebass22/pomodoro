@@ -1,7 +1,6 @@
 extern crate clap;
 use clap::{App, Arg};
-use notify_rust::Notification;
-use std::{thread, time};
+use pomodoro::run;
 
 fn main() {
     let matches = App::new("pomodoro")
@@ -14,21 +13,10 @@ fn main() {
         )
         .get_matches();
 
-    let duration;
-
     if let Ok(t) = matches.value_of("time").unwrap_or("2").parse::<u64>() {
-        duration = time::Duration::from_secs(t);
+        run(t);
     } else {
         eprintln!("arg must be integer");
         return;
     }
-
-    thread::sleep(duration);
-    println!("timer ended");
-
-    Notification::new()
-        .summary("pomodoro")
-        .body("pomodoro timer ended")
-        .show()
-        .unwrap();
 }
