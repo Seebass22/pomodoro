@@ -13,7 +13,7 @@ fn main() {
         )
         .get_matches();
 
-    if let Ok(t) = matches.value_of("time").unwrap_or("2").parse::<u64>() {
+    if let Ok(t) = matches.value_of("time").unwrap_or("25").parse::<u64>() {
         run(t);
     } else {
         eprintln!("arg must be integer");
