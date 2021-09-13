@@ -16,16 +16,14 @@ pub fn run(minutes: u64) {
     notify(&text);
 }
 
-pub fn do_work() {
-    let minutes = 25;
+pub fn do_work(minutes: u64) {
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
     let text = format!("{} minutes of work done", minutes);
     notify(&text);
 }
 
-pub fn take_break() {
-    let minutes = 5;
+pub fn take_break(minutes: u64) {
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
     let text = format!("{} minute break over", minutes);
