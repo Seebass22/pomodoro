@@ -10,10 +10,24 @@ fn notify(text: &str) {
 }
 
 pub fn run(minutes: u64) {
-    let duration = time::Duration::from_secs(minutes * 60);
-    thread::sleep(duration);
-    println!("timer ended");
+    thread::sleep(time::Duration::from_secs(minutes * 60));
 
-    let text = format!("{} minute pomodoro timer ended", minutes);
+    let text = format!("{} minute timer ended", minutes);
+    notify(&text);
+}
+
+pub fn do_work() {
+    let minutes = 25;
+    thread::sleep(time::Duration::from_secs(minutes * 60));
+
+    let text = format!("{} minutes of work done", minutes);
+    notify(&text);
+}
+
+pub fn take_break() {
+    let minutes = 5;
+    thread::sleep(time::Duration::from_secs(minutes * 60));
+
+    let text = format!("{} minute break over", minutes);
     notify(&text);
 }
