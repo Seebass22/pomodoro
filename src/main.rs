@@ -1,69 +1,39 @@
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{Parser, Subcommand};
 use pomodoro::*;
 
-fn is_int(val: String) -> Result<(), String> {
-    if val.parse::<u64>().is_ok() {
-        Ok(())
-    } else {
-        Err(String::from("arg must be integer"))
-    }
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// work for 25 minutes
+    Work {
+        #[arg(short, long, value_name = "MINUTES", default_value_t = 25)]
+        time: u64,
+    },
+    /// take a 5 minute break
+    Break {
+        #[arg(short, long, value_name = "MINUTES", default_value_t = 5)]
+        time: u64,
+    },
+    /// set a timer for any duration
+    Timer {
+        #[arg(short, long, value_name = "MINUTES")]
+        time: u64,
+    },
 }
 
 fn main() {
-    let matches = App::new("pomodoro")
-        .setting(AppSettings::SubcommandRequiredElseHelp)
-        .subcommand(
-            SubCommand::with_name("timer")
-                .about("set a timer for any duration")
-                .arg(
-                    Arg::with_name("time")
-                        .value_name("MINUTES")
-                        .help("timer duration")
-                        .required(true)
-                        .validator(is_int),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("break")
-                .about("take a 5 minute break")
-                .arg(
-                    Arg::with_name("time")
-                        .short("t")
-                        .long("time")
-                        .value_name("MINUTES")
-                        .help("set a different duration")
-                        .default_value("5")
-                        .validator(is_int),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("work")
-                .about("work for 25 minutes")
-                .arg(
-                    Arg::with_name("time")
-                        .short("t")
-                        .long("time")
-                        .value_name("MINUTES")
-                        .help("set a different duration")
-                        .default_value("25")
-                        .validator(is_int),
-                ),
-        )
-        .get_matches();
+    use Command::*;
 
-    match matches.subcommand() {
-        ("work", Some(matches)) => {
-            let t = matches.value_of("time").unwrap().parse::<u64>().unwrap();
-            do_work(t);
-        }
-        ("break", Some(matches)) => {
-            let t = matches.value_of("time").unwrap().parse::<u64>().unwrap();
-            take_break(t);
-        }
-        ("timer", Some(matches)) => {
-            let t = matches.value_of("time").unwrap().parse::<u64>().unwrap();
-            run(t);
-        }
-        _ => (),
+    let cli = Cli::parse();
+    match cli.command {
+        Work { time } => do_work(time),
+        Break { time } => take_break(time),
+        Timer { time } => run(time),
     }
 }
