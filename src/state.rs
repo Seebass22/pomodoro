@@ -31,3 +31,11 @@ pub fn get_status() -> Option<Status> {
     get_status_res().ok()
 }
 
+fn write_default() -> Result<(), std::io::Error> {
+    let config_and_status = ConfigAndStatus::default();
+    let mut toml_file = std::env::temp_dir();
+    toml_file.push("pomodoro_timer.toml");
+
+    let config_pretty_string = toml::to_string_pretty(&config_and_status).unwrap();
+    std::fs::write(toml_file, config_pretty_string)
+}
