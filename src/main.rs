@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 use pomodoro::*;
+mod state;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -29,6 +30,8 @@ enum Command {
 
 fn main() {
     use Command::*;
+    let status = state::get_status();
+    dbg!(status);
 
     let cli = Cli::parse();
     match cli.command {

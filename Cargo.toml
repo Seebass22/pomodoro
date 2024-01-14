@@ -8,3 +8,5 @@ edition = "2018"
 [dependencies]
 clap = { version = "4.4.14", features = ["derive"] }
 notify-rust = "4"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8.8"
