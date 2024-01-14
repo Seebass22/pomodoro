@@ -79,3 +79,19 @@ pub fn reset_set() -> Result<(), std::io::Error> {
     state.status.current_set = 1;
     state.write_to_disk()
 }
+
+pub fn write_config(sets: Option<u32>, work_time: Option<u64>, short_break_time: Option<u64>, long_break_time: Option<u64>) {
+    let mut state = get_state().unwrap_or_default();
+    if let (None, None, None, None) = (sets, work_time, short_break_time, long_break_time) {
+        println!("no changes to config");
+    }
+    // TODO: don't overwrite existing config
+    let config = Config {
+        sets,
+        work: work_time,
+        short_break: short_break_time,
+        long_break: long_break_time,
+    };
+    state.config = Some(config);
+    state.write_to_disk().expect("IO error");
+}
