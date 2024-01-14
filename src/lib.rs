@@ -1,5 +1,6 @@
 use notify_rust::Notification;
 use std::{thread, time};
+pub mod state;
 
 fn notify(text: &str) {
     Notification::new()
@@ -16,16 +17,35 @@ pub fn run(minutes: u64) {
     notify(&text);
 }
 
-pub fn do_work(minutes: u64) {
+pub fn do_work(minutes: u64, current_set: u32, sets: u32) {
+    println!("working for {} minutes [{}/{}]", minutes, current_set, sets);
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
-    let text = format!("{} minutes of work done", minutes);
+    let text = if current_set >= sets {
+        format!("{} minutes of work done\nset finished: next break should be long (pomodoro break --long)", minutes)
+    } else {
+        format!("{} minutes of work done", minutes)
+    };
+
+    state::increment_set().expect("IO error");
+
+    println!("{}", &text);
     notify(&text);
 }
 
-pub fn take_break(minutes: u64) {
+pub fn take_break(minutes: u64, is_long: bool) {
+    if is_long {
+        println!("taking a long break [{} minutes]", minutes);
+    } else {
+        println!("taking a break [{} minutes]", minutes);
+    }
+
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
+    if is_long {
+        state::reset_set().expect("IO error");
+    }
     let text = format!("{} minute break over", minutes);
+    println!("{}", &text);
     notify(&text);
 }

@@ -8,17 +8,28 @@ struct Cli {
     command: Command,
 }
 
+const DEFAULT_SETS: u32 = 4;
+const DEFAULT_WORK_TIME: u64 = 25;
+const DEFAULT_SHORT_BREAK_TIME: u64 = 5;
+const DEFAULT_LONG_BREAK_TIME: u64 = 20;
+
 #[derive(Subcommand)]
 enum Command {
     /// work for 25 minutes
     Work {
-        #[arg(short, long, value_name = "MINUTES", default_value_t = 25)]
-        time: u64,
+        /// [default: 25]
+        #[arg(short, long, value_name = "MINUTES")]
+        time: Option<u64>,
     },
     /// take a 5 minute break
     Break {
-        #[arg(short, long, value_name = "MINUTES", default_value_t = 5)]
-        time: u64,
+        /// [default: 5 (short break) or 20 (long break)]
+        #[arg(short, long, value_name = "MINUTES")]
+        time: Option<u64>,
+
+        /// take a long break
+        #[arg(short = 'l', long = "long", default_value_t = false)]
+        is_long: bool,
     },
     /// set a timer for any duration
     Timer {
@@ -29,11 +40,40 @@ enum Command {
 
 fn main() {
     use Command::*;
+    let config = match state::get_state() {
+        Some(config) => config,
+        None => {
+            state::write_default().expect("IO error");
+            state::ConfigAndStatus::default()
+        }
+    };
 
     let cli = Cli::parse();
     match cli.command {
-        Work { time } => do_work(time),
-        Break { time } => take_break(time),
+        Work { time } => {
+            let time = if let Some(time) = time {
+                time
+            } else {
+                config.get_work_time().unwrap_or(DEFAULT_WORK_TIME)
+            };
+            do_work(
+                time,
+                config.status.current_set,
+                config.get_sets().unwrap_or(DEFAULT_SETS),
+            );
+        }
+
+        Break { time, is_long } => {
+            let time = if let Some(time) = time {
+                time
+            } else if is_long {
+                config.get_long_break_time().unwrap_or(DEFAULT_LONG_BREAK_TIME)
+            } else {
+                config.get_short_break_time().unwrap_or(DEFAULT_SHORT_BREAK_TIME)
+            };
+            take_break(time, is_long)
+        }
+
         Timer { time } => run(time),
     }
 }
