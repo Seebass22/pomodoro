@@ -8,6 +8,7 @@ struct Cli {
     command: Command,
 }
 
+// update help text if changing defaults
 const DEFAULT_SETS: u32 = 4;
 const DEFAULT_WORK_TIME: u64 = 25;
 const DEFAULT_SHORT_BREAK_TIME: u64 = 5;
@@ -35,6 +36,21 @@ enum Command {
     Timer {
         #[arg(short, long, value_name = "MINUTES")]
         time: u64,
+    },
+
+    /// configure variables
+    Config {
+        #[arg(short, long)]
+        sets: Option<u32>,
+
+        #[arg(short, long = "work", value_name = "MINUTES")]
+        work_time: Option<u64>,
+
+        #[arg(short = 'b', long = "break", value_name = "MINUTES")]
+        short_break_time: Option<u64>,
+
+        #[arg(short, long = "long-break", value_name = "MINUTES")]
+        long_break_time: Option<u64>,
     },
 }
 
@@ -67,13 +83,26 @@ fn main() {
             let time = if let Some(time) = time {
                 time
             } else if is_long {
-                config.get_long_break_time().unwrap_or(DEFAULT_LONG_BREAK_TIME)
+                config
+                    .get_long_break_time()
+                    .unwrap_or(DEFAULT_LONG_BREAK_TIME)
             } else {
-                config.get_short_break_time().unwrap_or(DEFAULT_SHORT_BREAK_TIME)
+                config
+                    .get_short_break_time()
+                    .unwrap_or(DEFAULT_SHORT_BREAK_TIME)
             };
             take_break(time, is_long)
         }
 
         Timer { time } => run(time),
+
+        Config {
+            sets,
+            work_time,
+            short_break_time,
+            long_break_time,
+        } => {
+            state::write_config(sets, work_time, short_break_time, long_break_time);
+        }
     }
 }
