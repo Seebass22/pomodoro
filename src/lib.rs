@@ -18,8 +18,7 @@ pub fn run(minutes: u64) {
 }
 
 pub fn do_work(minutes: u64, current_set: u32, sets: u32) {
-    println!("working [{}/{}]", current_set, sets);
-
+    println!("working for {} minutes [{}/{}]", minutes, current_set, sets);
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
     let text = if current_set >= sets {
@@ -35,11 +34,18 @@ pub fn do_work(minutes: u64, current_set: u32, sets: u32) {
 }
 
 pub fn take_break(minutes: u64, is_long: bool) {
+    if is_long {
+        println!("taking a long break [{} minutes]", minutes);
+    } else {
+        println!("taking a break [{} minutes]", minutes);
+    }
+
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
     if is_long {
         state::reset_set().expect("IO error");
     }
     let text = format!("{} minute break over", minutes);
+    println!("{}", &text);
     notify(&text);
 }

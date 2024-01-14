@@ -34,6 +34,22 @@ impl ConfigAndStatus {
         let config_pretty_string = toml::to_string_pretty(self).unwrap();
         std::fs::write(toml_file, config_pretty_string)
     }
+
+    pub fn get_sets(&self) -> Option<u32> {
+        self.config.as_ref().and_then(|config| config.sets)
+    }
+
+    pub fn get_short_break_time(&self) -> Option<u64> {
+        self.config.as_ref().and_then(|config| config.short_break)
+    }
+
+    pub fn get_long_break_time(&self) -> Option<u64> {
+        self.config.as_ref().and_then(|config| config.long_break)
+    }
+
+    pub fn get_work_time(&self) -> Option<u64> {
+        self.config.as_ref().and_then(|config| config.work)
+    }
 }
 
 pub fn get_state() -> Option<ConfigAndStatus> {
