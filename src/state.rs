@@ -1,41 +1,65 @@
 use serde::{Deserialize, Serialize};
 use std::error;
 
-#[derive(Serialize, Deserialize, Default)]
-struct ConfigAndStatus {
-    config: Option<Config>,
-    status: Status,
-}
-
-#[derive(Serialize, Deserialize)]
-struct Config {
-    set: Option<u32>,
-    work: Option<u32>,
-    short_break: Option<u32>,
-    long_break: Option<u32>,
-}
-
 #[derive(Serialize, Deserialize, Default, Debug)]
+pub struct ConfigAndStatus {
+    pub config: Option<Config>,
+    pub status: Status,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Config {
+    pub sets: Option<u32>,
+    pub work: Option<u64>,
+    pub short_break: Option<u64>,
+    pub long_break: Option<u64>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Status {
     pub current_set: u32,
 }
 
-pub fn get_status() -> Option<Status> {
-    fn get_status_res() -> Result<Status, Box<dyn error::Error>> {
+impl Default for Status {
+    fn default() -> Self {
+        Self { current_set: 1 }
+    }
+}
+
+impl ConfigAndStatus {
+    fn write_to_disk(&self) -> Result<(), std::io::Error> {
+        let mut toml_file = std::env::temp_dir();
+        toml_file.push("pomodoro_timer.toml");
+
+        let config_pretty_string = toml::to_string_pretty(self).unwrap();
+        std::fs::write(toml_file, config_pretty_string)
+    }
+}
+
+pub fn get_state() -> Option<ConfigAndStatus> {
+    fn get_state_res() -> Result<ConfigAndStatus, Box<dyn error::Error>> {
         let mut toml_file = std::env::temp_dir();
         toml_file.push("pomodoro_timer.toml");
         let contents = std::fs::read_to_string(toml_file)?;
         let res = toml::from_str::<ConfigAndStatus>(&contents)?;
-        Ok(res.status)
+        Ok(res)
     }
-    get_status_res().ok()
+    get_state_res().ok()
 }
 
-fn write_default() -> Result<(), std::io::Error> {
+pub fn write_default() -> Result<(), std::io::Error> {
     let config_and_status = ConfigAndStatus::default();
-    let mut toml_file = std::env::temp_dir();
-    toml_file.push("pomodoro_timer.toml");
+    config_and_status.write_to_disk()
+}
 
-    let config_pretty_string = toml::to_string_pretty(&config_and_status).unwrap();
-    std::fs::write(toml_file, config_pretty_string)
+pub fn increment_set() -> Result<(), std::io::Error> {
+    let mut state = get_state().unwrap_or_default();
+    state.status.current_set += 1;
+    state.write_to_disk()
+}
+
+pub fn reset_set() -> Result<(), std::io::Error> {
+    let mut state = get_state().unwrap_or_default();
+    state.status.current_set = 1;
+    state.write_to_disk()
 }
