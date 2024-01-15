@@ -72,7 +72,7 @@ fn main() {
                 config.get_work_time().unwrap_or(DEFAULT_WORK_TIME)
             };
             do_work(
-                config.get_work_time().unwrap_or(time),
+                time,
                 config.status.current_set,
                 config.get_sets().unwrap_or(DEFAULT_SETS),
             );
