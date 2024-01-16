@@ -80,7 +80,12 @@ pub fn reset_set() -> Result<(), std::io::Error> {
     state.write_to_disk()
 }
 
-pub fn write_config(sets: Option<u32>, work_time: Option<u64>, short_break_time: Option<u64>, long_break_time: Option<u64>) {
+pub fn write_config(
+    sets: Option<u32>,
+    work_time: Option<u64>,
+    short_break_time: Option<u64>,
+    long_break_time: Option<u64>,
+) {
     let mut state = get_state().unwrap_or_default();
     if let (None, None, None, None) = (sets, work_time, short_break_time, long_break_time) {
         println!("no changes to config");

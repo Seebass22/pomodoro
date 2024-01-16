@@ -8,6 +8,7 @@ struct Cli {
     command: Command,
 }
 
+// update help text if changing defaults
 const DEFAULT_SETS: u32 = 4;
 const DEFAULT_WORK_TIME: u64 = 25;
 const DEFAULT_SHORT_BREAK_TIME: u64 = 5;
