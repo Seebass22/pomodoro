@@ -3,19 +3,17 @@ use notify_rust::Notification;
 use std::{thread, time};
 pub mod state;
 
-fn notify(text: &str) {
-    Notification::new()
-        .summary("pomodoro")
-        .body(text)
-        .show()
-        .unwrap();
+fn notify(text: &str) -> Result<()> {
+    Notification::new().summary("pomodoro").body(text).show()?;
+    Ok(())
 }
 
-pub fn run(minutes: u64) {
+pub fn run(minutes: u64) -> Result<()> {
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
     let text = format!("{} minute timer ended", minutes);
-    notify(&text);
+    notify(&text)?;
+    Ok(())
 }
 
 pub fn do_work(minutes: u64, current_set: u32, sets: u32) -> Result<()> {
@@ -27,11 +25,10 @@ pub fn do_work(minutes: u64, current_set: u32, sets: u32) -> Result<()> {
     } else {
         format!("{} minutes of work done", minutes)
     };
+    println!("{}", &text);
+    notify(&text)?;
 
     state::increment_set()?;
-
-    println!("{}", &text);
-    notify(&text);
     Ok(())
 }
 
@@ -44,11 +41,12 @@ pub fn take_break(minutes: u64, is_long: bool) -> Result<()> {
 
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
+    let text = format!("{} minute break over", minutes);
+    println!("{}", &text);
+    notify(&text)?;
+
     if is_long {
         state::reset_set()?;
     }
-    let text = format!("{} minute break over", minutes);
-    println!("{}", &text);
-    notify(&text);
     Ok(())
 }

@@ -95,7 +95,7 @@ fn main() -> Result<()> {
             take_break(time, is_long)?;
         }
 
-        Timer { time } => run(time),
+        Timer { time } => run(time)?,
 
         Config {
             sets,
