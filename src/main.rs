@@ -1,3 +1,4 @@
+use anyhow::Result;
 use clap::{Parser, Subcommand};
 use pomodoro::*;
 
@@ -54,12 +55,12 @@ enum Command {
     },
 }
 
-fn main() {
+fn main() -> Result<()> {
     use Command::*;
     let config = match state::get_state() {
         Some(config) => config,
         None => {
-            state::write_default().expect("IO error");
+            state::write_default()?;
             state::ConfigAndStatus::default()
         }
     };
@@ -76,7 +77,7 @@ fn main() {
                 time,
                 config.status.current_set,
                 config.get_sets().unwrap_or(DEFAULT_SETS),
-            );
+            )?;
         }
 
         Break { time, is_long } => {
@@ -91,7 +92,7 @@ fn main() {
                     .get_short_break_time()
                     .unwrap_or(DEFAULT_SHORT_BREAK_TIME)
             };
-            take_break(time, is_long)
+            take_break(time, is_long)?;
         }
 
         Timer { time } => run(time),
@@ -102,7 +103,8 @@ fn main() {
             short_break_time,
             long_break_time,
         } => {
-            state::write_config(sets, work_time, short_break_time, long_break_time);
+            state::write_config(sets, work_time, short_break_time, long_break_time)?;
         }
     }
+    Ok(())
 }

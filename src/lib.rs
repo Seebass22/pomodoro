@@ -1,3 +1,4 @@
+use anyhow::Result;
 use notify_rust::Notification;
 use std::{thread, time};
 pub mod state;
@@ -17,7 +18,7 @@ pub fn run(minutes: u64) {
     notify(&text);
 }
 
-pub fn do_work(minutes: u64, current_set: u32, sets: u32) {
+pub fn do_work(minutes: u64, current_set: u32, sets: u32) -> Result<()> {
     println!("working for {} minutes [{}/{}]", minutes, current_set, sets);
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
@@ -27,13 +28,14 @@ pub fn do_work(minutes: u64, current_set: u32, sets: u32) {
         format!("{} minutes of work done", minutes)
     };
 
-    state::increment_set().expect("IO error");
+    state::increment_set()?;
 
     println!("{}", &text);
     notify(&text);
+    Ok(())
 }
 
-pub fn take_break(minutes: u64, is_long: bool) {
+pub fn take_break(minutes: u64, is_long: bool) -> Result<()> {
     if is_long {
         println!("taking a long break [{} minutes]", minutes);
     } else {
@@ -43,9 +45,10 @@ pub fn take_break(minutes: u64, is_long: bool) {
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
     if is_long {
-        state::reset_set().expect("IO error");
+        state::reset_set()?;
     }
     let text = format!("{} minute break over", minutes);
     println!("{}", &text);
     notify(&text);
+    Ok(())
 }
