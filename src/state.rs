@@ -104,6 +104,6 @@ pub fn write_config(
     };
     state.config = Some(config);
     state.write_to_disk()?;
-    println!("config set to {:?}", state.config);
+    print!("config set to:\n{}", toml::to_string_pretty(&state.config).unwrap());
     Ok(())
 }
