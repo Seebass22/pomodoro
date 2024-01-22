@@ -104,6 +104,19 @@ pub fn write_config(
     };
     state.config = Some(config);
     state.write_to_disk()?;
-    print!("config set to:\n{}", toml::to_string_pretty(&state.config).unwrap());
+    print!(
+        "config set to:\n{}",
+        toml::to_string_pretty(&state.config).unwrap()
+    );
+    Ok(())
+}
+
+pub fn reset() -> Result<()> {
+    let mut state = get_state().unwrap_or_default();
+    state.config = Default::default();
+    state.write_to_disk()?;
+    println!("config reset to defaults");
+    Ok(())
+}
     Ok(())
 }
