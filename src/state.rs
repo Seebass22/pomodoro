@@ -91,7 +91,7 @@ pub fn write_config(
         println!("no changes to config");
         return Ok(());
     }
-    // TODO: don't overwrite existing config
+
     let config = Config {
         sets,
         work: work_time,
@@ -114,5 +114,9 @@ pub fn reset() -> Result<()> {
     println!("config reset to defaults");
     Ok(())
 }
+
+pub fn reset_sets() -> Result<()> {
+    reset_set()?;
+    println!("reset current set");
     Ok(())
 }

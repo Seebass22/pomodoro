@@ -57,6 +57,9 @@ enum Command {
         #[arg(short, long, default_value_t = false)]
         reset: bool,
     },
+
+    /// reset current set
+    Reset,
 }
 
 fn main() -> Result<()> {
@@ -114,6 +117,8 @@ fn main() -> Result<()> {
                 state::write_config(sets, work_time, short_break_time, long_break_time)?;
             }
         }
+
+        Reset => state::reset_sets()?,
     }
     Ok(())
 }
