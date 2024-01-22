@@ -52,6 +52,10 @@ enum Command {
 
         #[arg(short, long = "long-break", value_name = "MINUTES")]
         long_break_time: Option<u64>,
+
+        /// reset to defaults
+        #[arg(short, long, default_value_t = false)]
+        reset: bool,
     },
 }
 
@@ -102,8 +106,13 @@ fn main() -> Result<()> {
             work_time,
             short_break_time,
             long_break_time,
+            reset,
         } => {
-            state::write_config(sets, work_time, short_break_time, long_break_time)?;
+            if reset {
+                state::reset()?;
+            } else {
+                state::write_config(sets, work_time, short_break_time, long_break_time)?;
+            }
         }
     }
     Ok(())
