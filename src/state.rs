@@ -57,14 +57,11 @@ impl ConfigAndStatus {
 }
 
 pub fn get_state() -> Option<ConfigAndStatus> {
-    fn get_state_res() -> Result<ConfigAndStatus> {
-        let mut toml_file = std::env::temp_dir();
-        toml_file.push("pomodoro_timer.toml");
-        let contents = std::fs::read_to_string(toml_file)?;
-        let res = toml::from_str::<ConfigAndStatus>(&contents)?;
-        Ok(res)
-    }
-    get_state_res().ok()
+    let mut toml_file = std::env::temp_dir();
+    toml_file.push("pomodoro_timer.toml");
+    let contents = std::fs::read_to_string(toml_file).ok()?;
+    let res = toml::from_str::<ConfigAndStatus>(&contents).ok()?;
+    Some(res)
 }
 
 pub fn write_default() -> Result<()> {
