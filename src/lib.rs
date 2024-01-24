@@ -1,23 +1,22 @@
+use anyhow::Result;
 use notify_rust::Notification;
 use std::{thread, time};
 pub mod state;
 
-fn notify(text: &str) {
-    Notification::new()
-        .summary("pomodoro")
-        .body(text)
-        .show()
-        .unwrap();
+fn notify(text: &str) -> Result<()> {
+    Notification::new().summary("pomodoro").body(text).show()?;
+    Ok(())
 }
 
-pub fn run(minutes: u64) {
+pub fn run(minutes: u64) -> Result<()> {
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
     let text = format!("{} minute timer ended", minutes);
-    notify(&text);
+    notify(&text)?;
+    Ok(())
 }
 
-pub fn do_work(minutes: u64, current_set: u32, sets: u32) {
+pub fn do_work(minutes: u64, current_set: u32, sets: u32) -> Result<()> {
     println!("working for {} minutes [{}/{}]", minutes, current_set, sets);
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
@@ -26,14 +25,14 @@ pub fn do_work(minutes: u64, current_set: u32, sets: u32) {
     } else {
         format!("{} minutes of work done", minutes)
     };
-
-    state::increment_set().expect("IO error");
-
     println!("{}", &text);
-    notify(&text);
+    notify(&text)?;
+
+    state::increment_set()?;
+    Ok(())
 }
 
-pub fn take_break(minutes: u64, is_long: bool) {
+pub fn take_break(minutes: u64, is_long: bool) -> Result<()> {
     if is_long {
         println!("taking a long break [{} minutes]", minutes);
     } else {
@@ -42,10 +41,12 @@ pub fn take_break(minutes: u64, is_long: bool) {
 
     thread::sleep(time::Duration::from_secs(minutes * 60));
 
-    if is_long {
-        state::reset_set().expect("IO error");
-    }
     let text = format!("{} minute break over", minutes);
     println!("{}", &text);
-    notify(&text);
+    notify(&text)?;
+
+    if is_long {
+        state::reset_set()?;
+    }
+    Ok(())
 }

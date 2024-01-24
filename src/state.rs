@@ -1,5 +1,6 @@
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::error;
+use std::fs;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct ConfigAndStatus {
@@ -27,12 +28,15 @@ impl Default for Status {
 }
 
 impl ConfigAndStatus {
-    fn write_to_disk(&self) -> Result<(), std::io::Error> {
-        let mut toml_file = std::env::temp_dir();
-        toml_file.push("pomodoro_timer.toml");
+    fn write_to_disk(&self) -> Result<()> {
+        let mut config_path = std::env::temp_dir();
+        config_path.push("pomodoro_timer.toml");
 
-        let config_pretty_string = toml::to_string_pretty(self).unwrap();
-        std::fs::write(toml_file, config_pretty_string)
+        let config_pretty_string =
+            toml::to_string_pretty(self).context("TOML serialization error")?;
+        fs::write(&config_path, config_pretty_string)
+            .with_context(|| format!("Failed to write to {}", config_path.display()))?;
+        Ok(())
     }
 
     pub fn get_sets(&self) -> Option<u32> {
@@ -59,18 +63,18 @@ pub fn get_state() -> Option<ConfigAndStatus> {
     toml::from_str::<ConfigAndStatus>(&contents).ok()
 }
 
-pub fn write_default() -> Result<(), std::io::Error> {
+pub fn write_default() -> Result<()> {
     let config_and_status = ConfigAndStatus::default();
     config_and_status.write_to_disk()
 }
 
-pub fn increment_set() -> Result<(), std::io::Error> {
+pub fn increment_set() -> Result<()> {
     let mut state = get_state().unwrap_or_default();
     state.status.current_set += 1;
     state.write_to_disk()
 }
 
-pub fn reset_set() -> Result<(), std::io::Error> {
+pub fn reset_set() -> Result<()> {
     let mut state = get_state().unwrap_or_default();
     state.status.current_set = 1;
     state.write_to_disk()
@@ -81,10 +85,11 @@ pub fn write_config(
     work_time: Option<u64>,
     short_break_time: Option<u64>,
     long_break_time: Option<u64>,
-) {
+) -> Result<()> {
     let mut state = get_state().unwrap_or_default();
     if let (None, None, None, None) = (sets, work_time, short_break_time, long_break_time) {
         println!("no changes to config");
+        return Ok(());
     }
     // TODO: don't overwrite existing config
     let config = Config {
@@ -94,6 +99,7 @@ pub fn write_config(
         long_break: long_break_time,
     };
     state.config = Some(config);
-    state.write_to_disk().expect("IO error");
+    state.write_to_disk()?;
     print!("config set to:\n{}", toml::to_string_pretty(&state.config).unwrap());
+    Ok(())
 }
